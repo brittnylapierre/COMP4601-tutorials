@@ -93,14 +93,10 @@ public class SimpleDataAccessObject {
 		System.out.println(sdao.toStringAnswerUsers());
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerItems());
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerSVD());
 		System.out.println("=====================================");
-		for (int i = 0; i < sdao.users.length; i++) {
-			for (int j = 0; j < sdao.items.length; j++) {
-				if (sdao.ratings[i][j] == -1){
-					sdao.predictionSDV(i, j);
-				}
-			}
-		}
+
 		
 		sdao = new SimpleDataAccessObject(new File("test2.txt"));
 		sdao.input();
@@ -109,23 +105,10 @@ public class SimpleDataAccessObject {
 		System.out.println(sdao.toStringAnswerUsers());
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerItems());
-		
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerSVD());
 		System.out.println("=====================================");
-		for (int i = 0; i < sdao.users.length; i++) {
-			for (int j = 0; j < sdao.items.length; j++) {
-				if (sdao.ratings[i][j] == -1){
-					sdao.predictionSDV(i, j);
-				}
-			}
-		}
-		
-		for (int i = 0; i < sdao.users.length; i++) {
-			for (int j = 0; j < sdao.items.length; j++) {
-				if (sdao.ratings[i][j] == -1){
-					sdao.predictionSDV(i, j);
-				}
-			}
-		}
+
 		
 		sdao = new SimpleDataAccessObject(new File("test3.txt"));
 		sdao.input();
@@ -134,18 +117,10 @@ public class SimpleDataAccessObject {
 		System.out.println(sdao.toStringAnswerUsers());
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerItems());
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerSVD());
 		System.out.println("=====================================");
-		
 
-		
-		for (int i = 0; i < sdao.users.length; i++) {
-			for (int j = 0; j < sdao.items.length; j++) {
-				if (sdao.ratings[i][j] == -1){
-					sdao.predictionSDV(i, j);
-				}
-			}
-		}
-		
 	}
 	
 	
@@ -304,7 +279,6 @@ public class SimpleDataAccessObject {
 	
 	
 	public double predictionSDV(int a, int p){
-		double userAvg = getAverageRatingForUserPearson(a);
 		double[][] dRatings = new double[users.length][items.length];
 
 		for (int i = 0; i < users.length; i++) {
@@ -319,25 +293,59 @@ public class SimpleDataAccessObject {
 
 	    int i = matrixSVD.getU().getRowDimension();
 	    int j = matrixSVD.getU().getColumnDimension();
-	    //double[][] U = new double[i][j];
-	    //matrixSVD.getU().copySubMatrix(0, i - 1, 0, j - 1, U);
-	    double[][] U = new double[1][j];
-	    matrixSVD.getU().copySubMatrix(a, a, 0, j - 1, U);
+	    
+	    double[][] ua = new double[1][j];
+	    matrixSVD.getU().copySubMatrix(a, a, 0, j - 1, ua);
+	    Array2DRowRealMatrix UA = new Array2DRowRealMatrix(ua);
 	    
 	    Array2DRowRealMatrix S = (Array2DRowRealMatrix) matrixSVD.getS(); //diagonal
 
 
 	    i = matrixSVD.getVT().getRowDimension();
 	    j = matrixSVD.getVT().getColumnDimension();
-	    //double[][] VT = new double[i][j];
-	    //matrixSVD.getVT().copySubMatrix(0, i - 1, 0, j - 1, VT);
-	    double[][] VT = new double[i][1];
-	    matrixSVD.getVT().copySubMatrix(0, i - 1, p, p, VT);
 	    
-	    RealMatrix approximatedSvdMatrix = (new Array2DRowRealMatrix(U)).multiply(S).multiply(new Array2DRowRealMatrix(VT));
-	    System.out.println(Arrays.deepToString(approximatedSvdMatrix.getData()));
+	    double[][] vt = new double[i][1];
+	    matrixSVD.getVT().copySubMatrix(0, i - 1, p, p, vt);
+	    Array2DRowRealMatrix VT = new Array2DRowRealMatrix(vt);
 	    
-		return -1;//array.length != 0 ? array[0][0] : -1;
+	    RealMatrix results = UA.multiply(S).multiply(VT);
+	    double[][] dataArray = results.getData();
+	    
+	    double svd  = dataArray.length != 0 ? dataArray[0][0] : -1;
+	    
+	    double userAvg = getAverageRatingForUserPearson(a);
+	    
+		return userAvg + svd;
+	}
+	
+	
+	public String toStringAnswerSVD() {
+		StringBuffer buf = new StringBuffer();
+		
+		buf.append("SimpleDataAccessObject With Predictions by SVD\n\n");
+		for (String u : users) {
+			buf.append(u);
+			buf.append(" ");
+		}
+		buf.append("\n");
+		for (String i : items) {
+			buf.append(i);
+			buf.append(" ");
+		}		
+		buf.append("\n");
+		for (int i = 0; i < users.length; i++) {
+			for (int j = 0; j < items.length; j++) {
+				if (ratings[i][j] == -1){
+					//calculateValue
+					buf.append(predictionSDV(i,j));//predictItem(i,j));
+				}
+				else
+					buf.append(ratings[i][j]);
+				buf.append(" ");
+			}
+			buf.append("\n");
+		}
+		return buf.toString();
 	}
 	
 }
