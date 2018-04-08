@@ -3,7 +3,12 @@ package edu.carleton.comp4601.cf.dao;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
+
+import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 
 public class SimpleDataAccessObject {
 	
@@ -89,6 +94,13 @@ public class SimpleDataAccessObject {
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerItems());
 		System.out.println("=====================================");
+		for (int i = 0; i < sdao.users.length; i++) {
+			for (int j = 0; j < sdao.items.length; j++) {
+				if (sdao.ratings[i][j] == -1){
+					sdao.predictionSDV(i, j);
+				}
+			}
+		}
 		
 		sdao = new SimpleDataAccessObject(new File("test2.txt"));
 		sdao.input();
@@ -99,6 +111,21 @@ public class SimpleDataAccessObject {
 		System.out.println(sdao.toStringAnswerItems());
 		
 		System.out.println("=====================================");
+		for (int i = 0; i < sdao.users.length; i++) {
+			for (int j = 0; j < sdao.items.length; j++) {
+				if (sdao.ratings[i][j] == -1){
+					sdao.predictionSDV(i, j);
+				}
+			}
+		}
+		
+		for (int i = 0; i < sdao.users.length; i++) {
+			for (int j = 0; j < sdao.items.length; j++) {
+				if (sdao.ratings[i][j] == -1){
+					sdao.predictionSDV(i, j);
+				}
+			}
+		}
 		
 		sdao = new SimpleDataAccessObject(new File("test3.txt"));
 		sdao.input();
@@ -108,6 +135,16 @@ public class SimpleDataAccessObject {
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerItems());
 		System.out.println("=====================================");
+		
+
+		
+		for (int i = 0; i < sdao.users.length; i++) {
+			for (int j = 0; j < sdao.items.length; j++) {
+				if (sdao.ratings[i][j] == -1){
+					sdao.predictionSDV(i, j);
+				}
+			}
+		}
 		
 	}
 	
@@ -183,6 +220,7 @@ public class SimpleDataAccessObject {
 				if (ratings[i][j] == -1){
 					//calculateValue
 					buf.append(predict(i,j));
+					predictionSDV(i, j);
 				}
 				else
 					buf.append(ratings[i][j]);
@@ -220,7 +258,7 @@ public class SimpleDataAccessObject {
 		double sqBSum = 0;
 		
 		for (int i = 0; i < users.length; i++) {
-			double userAvg = getAverageForItem(i);
+			double userAvg = getAverageRatingForUserPearson(i);
 			numinator += (ratings[i][itemA] - userAvg) * (ratings[i][itemB] - userAvg);
 			sqASum += Math.pow((ratings[i][itemA] - userAvg), 2);
 			sqBSum += Math.pow((ratings[i][itemB]- userAvg), 2);
@@ -229,18 +267,6 @@ public class SimpleDataAccessObject {
 		denominator = Math.sqrt(sqASum) * Math.sqrt(sqBSum);
 		
 		return denominator != 0 ? numinator / denominator : 0;
-	}
-	
-	public double getAverageForItem(int userToAvg){
-		double sum = 0;
-		for (int j = 0; j < items.length; j++) {
-			//Sum here
-			if (ratings[userToAvg][j] != -1){
-				// get average for item?
-				sum += ratings[userToAvg][j];
-			}
-		}
-		return items.length > 0 ? sum / items.length : 0;
 	}
 	
 	public String toStringAnswerItems() {
@@ -270,6 +296,48 @@ public class SimpleDataAccessObject {
 			buf.append("\n");
 		}
 		return buf.toString();
+	}
+	
+	
+	
+	//SVD
+	
+	
+	public double predictionSDV(int a, int p){
+		double userAvg = getAverageRatingForUserPearson(a);
+		double[][] dRatings = new double[users.length][items.length];
+
+		for (int i = 0; i < users.length; i++) {
+			for (int j = 0; j < items.length; j++) {
+				dRatings[i][j] = (double) ratings[i][j];
+			}
+		}
+		
+		Array2DRowRealMatrix matrix = new Array2DRowRealMatrix(dRatings);
+		SingularValueDecomposition matrixSVD = new SingularValueDecomposition(matrix);
+	    
+
+	    int i = matrixSVD.getU().getRowDimension();
+	    int j = matrixSVD.getU().getColumnDimension();
+	    //double[][] U = new double[i][j];
+	    //matrixSVD.getU().copySubMatrix(0, i - 1, 0, j - 1, U);
+	    double[][] U = new double[1][j];
+	    matrixSVD.getU().copySubMatrix(a, a, 0, j - 1, U);
+	    
+	    Array2DRowRealMatrix S = (Array2DRowRealMatrix) matrixSVD.getS(); //diagonal
+
+
+	    i = matrixSVD.getVT().getRowDimension();
+	    j = matrixSVD.getVT().getColumnDimension();
+	    //double[][] VT = new double[i][j];
+	    //matrixSVD.getVT().copySubMatrix(0, i - 1, 0, j - 1, VT);
+	    double[][] VT = new double[i][1];
+	    matrixSVD.getVT().copySubMatrix(0, i - 1, p, p, VT);
+	    
+	    RealMatrix approximatedSvdMatrix = (new Array2DRowRealMatrix(U)).multiply(S).multiply(new Array2DRowRealMatrix(VT));
+	    System.out.println(Arrays.deepToString(approximatedSvdMatrix.getData()));
+	    
+		return -1;//array.length != 0 ? array[0][0] : -1;
 	}
 	
 }
