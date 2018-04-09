@@ -95,6 +95,8 @@ public class SimpleDataAccessObject {
 		System.out.println(sdao.toStringAnswerItems());
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerSVD());
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerBayes());
 		System.out.println("=====================================");
 
 		
@@ -107,6 +109,8 @@ public class SimpleDataAccessObject {
 		System.out.println(sdao.toStringAnswerItems());
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerSVD());
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerBayes());
 		System.out.println("=====================================");
 
 		
@@ -119,8 +123,22 @@ public class SimpleDataAccessObject {
 		System.out.println(sdao.toStringAnswerItems());
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerSVD());
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerBayes());
 		System.out.println("=====================================");
 
+		sdao = new SimpleDataAccessObject(new File("test4.txt"));
+		sdao.input();
+		System.out.println(sdao);
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerUsers());
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerItems());
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerSVD());
+		System.out.println("\n");
+		System.out.println(sdao.toStringAnswerBayes());
+		System.out.println("=====================================");
 	}
 	
 	
@@ -338,6 +356,79 @@ public class SimpleDataAccessObject {
 				if (ratings[i][j] == -1){
 					//calculateValue
 					buf.append(predictionSDV(i,j));//predictItem(i,j));
+				}
+				else
+					buf.append(ratings[i][j]);
+				buf.append(" ");
+			}
+			buf.append("\n");
+		}
+		return buf.toString();
+	}
+	
+	public int predictionBayes(int user, int itemNumber){
+		double highest = 0;
+		int score = 0;
+		for(int i = 1; i <= 5; i++){
+			double p = calculateProbabilityBayes(user, itemNumber, i);
+			if(p > highest){
+				highest = p;
+				score = i;
+			}
+		}
+		return score;
+	}
+	
+	public double calculateProbabilityBayes(int user, int itemNumber, int rating){
+		double denominator = 0;
+		ArrayList<Integer> nominators = new ArrayList<Integer>(); 
+		for(int j = 0; j < items.length; j++){
+			nominators.add(0);
+		}
+		
+		for (int i = 0; i < users.length; i++) {
+			if(i != user && ratings[i][itemNumber] == rating){
+				for (int j = 0; j < items.length; j++) {
+					if (ratings[i][j] != -1 && ratings[i][j] == ratings[user][j]){
+						nominators.set(j, nominators.get(j)+1);
+					}
+				}
+				denominator++;
+			}
+		}
+		
+		double probability = 0;
+		if(denominator != 0){
+			probability = 1;
+			for(int i = 0; i < nominators.size(); i++){
+				if(i != itemNumber){
+					probability *= (double)nominators.get(i)/denominator;	
+					//System.out.println(nominators.get(i)/denominator);
+				}
+			}
+		}
+		//System.out.println(probability);
+		return probability;
+	}
+	
+	public String toStringAnswerBayes() {
+		StringBuffer buf = new StringBuffer();
+		
+		buf.append("SimpleDataAccessObject With Predictions by Bayes\n\n");
+		for (String u : users) {
+			buf.append(u);
+			buf.append(" ");
+		}
+		buf.append("\n");
+		for (String i : items) {
+			buf.append(i);
+			buf.append(" ");
+		}		
+		buf.append("\n");
+		for (int i = 0; i < users.length; i++) {
+			for (int j = 0; j < items.length; j++) {
+				if (ratings[i][j] == -1){
+					buf.append(predictionBayes(i,j));
 				}
 				else
 					buf.append(ratings[i][j]);
