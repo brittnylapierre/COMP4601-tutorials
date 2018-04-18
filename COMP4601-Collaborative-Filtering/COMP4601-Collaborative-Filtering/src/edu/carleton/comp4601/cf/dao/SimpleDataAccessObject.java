@@ -101,7 +101,7 @@ public class SimpleDataAccessObject {
 		System.out.println("=====================================");
 
 		
-		sdao = new SimpleDataAccessObject(new File("test2.txt"));
+		/*sdao = new SimpleDataAccessObject(new File("test2.txt"));
 		sdao.input();
 		System.out.println(sdao);
 		System.out.println("\n");
@@ -126,31 +126,18 @@ public class SimpleDataAccessObject {
 		//System.out.println(sdao.toStringAnswerSVD());
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerBayes());
-		System.out.println("=====================================");
+		System.out.println("=====================================");*/
 
 		sdao = new SimpleDataAccessObject(new File("test4.txt"));
 		sdao.input();
-		System.out.println(sdao);
+		/*System.out.println(sdao);
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerUsers());
 		System.out.println("\n");
 		System.out.println(sdao.toStringAnswerItems());
 		System.out.println("\n");
-		//System.out.println(sdao.toStringAnswerSVD());
-		System.out.println("\n");
-		System.out.println(sdao.toStringAnswerBayes());
-		System.out.println("=====================================");
-		
-		sdao = new SimpleDataAccessObject(new File("test5.txt"));
-		sdao.input();
-		System.out.println(sdao);
-		System.out.println("\n");
-		System.out.println(sdao.toStringAnswerUsers());
-		System.out.println("\n");
-		System.out.println(sdao.toStringAnswerItems());
-		System.out.println("\n");
-		//System.out.println(sdao.toStringAnswerSVD());
-		System.out.println("\n");
+		//System.out.println(sdao.toStringAnswerSVD());*/
+		System.out.println("\n(Example from class)\n");
 		System.out.println(sdao.toStringAnswerBayes());
 		System.out.println("=====================================");
 	}
