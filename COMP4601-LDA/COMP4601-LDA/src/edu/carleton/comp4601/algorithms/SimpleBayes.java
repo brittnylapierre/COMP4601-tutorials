@@ -144,18 +144,18 @@ public class SimpleBayes {
 				System.out.println("Predicted Positive");
 				if(posfiles.contains(file.getName())){
 					System.out.println("Predicted correctly!");
+					correct++;
 				} else {
 					System.out.println("Predicted incorrectly!");
 				}
-				correct++;
 			} else if(probPos < probNeg){
 				System.out.println("Predicted Negative");
 				if(negfiles.contains(file.getName())){
 					System.out.println("Predicted correctly!");
+					correct++;
 				} else {
 					System.out.println("Predicted incorrectly!");
 				}
-				correct++;
 			} else {
 				System.out.println("Tie - could not predict");
 				System.out.println(probPos);
